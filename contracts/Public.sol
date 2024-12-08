@@ -9,10 +9,10 @@ contract PublicLayer {
     bytes32 IcHash; //Hashed Ic reference from Private Layer
     }
 
-    mapping(address => PublicLayer) public publicInfoRegistry; //registry
+    mapping(address => PublicInfo) public publicInfoRegistry; //registry
 
     //log new register with ed
-    event PublicInfoRegistered (address useraddress, string name, uint BDate, bytes32 icHash);
+    event PublicInfoRegistered(address useraddress, string name, uint BDate, bytes32 icHash);
 
     //funtion registering public info
     function registerPublicInfo (
@@ -23,7 +23,7 @@ contract PublicLayer {
     )
     public {
         bytes32 IcHash = keccak256(abi.encodePacked(IcNumber)); //hashing ic
-        publicInfoRegistry[useraddress] = PublicLayer(name, BDate, IcHash);
+        publicInfoRegistry[useraddress] = PublicInfo(name, BDate, IcHash);
 
         emit PublicInfoRegistered(useraddress, name, BDate, IcHash);
     }
