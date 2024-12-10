@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Public Info</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>View Public Information</h1>
+
+    <label for="publicAddress">Enter Ethereum Address:</label>
+    <input type="text" id="publicAddress" required>
+    <button onclick="viewPublicInfo()">View Public Info</button>
+
+    <h2>Public Info</h2>
+    <p id="publicInfo"></p>
+
+    <script>
+        // Ensure Web3 is available (MetaMask is installed)
+        if (typeof window.ethereum !== 'undefined') {
+            console.log("MetaMask is installed!");
+        } else {
+            alert("Please install MetaMask to use this feature.");
+        }
+
+        // Initialize Web3
+        const web3 = new Web3(window.ethereum);
+
+        // Contract address and ABI
+        const publicLayerAddress = '0x5fbdb2315678afecb367f032d93f642f64180aa3'; // Replace with your contract address
+        const publicLayerAbi = [
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "", "type": "address" }
+                ],
+                "name": "publicInfoRegistry",
+                "outputs": [
+                    { "internalType": "string", "name": "name", "type": "string" },
+                    { "internalType": "uint256", "name": "BDate", "type": "uint256" },
+                    { "internalType": "bytes32", "name": "IcHash", "type": "bytes32" }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "useraddress", "type": "address" },
+                    { "internalType": "string", "name": "name", "type": "string" },
+                    { "internalType": "uint256", "name": "BDate", "type": "uint256" },
+                    { "internalType": "string", "name": "IcNumber", "type": "string" }
+                ],
+                "name": "registerPublicInfo",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "useraddress", "type": "address" },
+                    { "internalType": "string", "name": "IcNumber", "type": "string" }
+                ],
+                "name": "verifyHash",
+                "outputs": [
+                    { "internalType": "bool", "name": "", "type": "bool" }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const publicLayer = new web3.eth.Contract(publicLayerAbi, publicLayerAddress);
+
+        async function viewPublicInfo() {
+            const userAddress = document.getElementById("publicAddress").value;
+
+            // Request the user to connect their wallet (MetaMask)
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+            // Fetch public info from the contract
+            try {
+                const publicInfo = await publicLayer.methods.publicInfoRegistry(userAddress).call();
+                console.log(publicInfo);  // For debugging
+
+                if (publicInfo.name && publicInfo.BDate) {
+                    const publicInfoText = `Name: ${publicInfo.name}, Birth Date: ${publicInfo.BDate}, Hashed IC: ${publicInfo.IcHash}`;
+                    document.getElementById("publicInfo").innerText = publicInfoText;
+                } else {
+                    document.getElementById("publicInfo").innerText = "No public information found for this address.";
+                }
+            } catch (error) {
+                console.error("Error fetching public info:", error);
+                document.getElementById("publicInfo").innerText = "Failed to retrieve public information. Please check the address.";
+            }
+        }
+    </script>
+</body>
+</html>

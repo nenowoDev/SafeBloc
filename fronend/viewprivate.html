@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Private Info</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>View Private Information</h1>
+
+    <button onclick="viewPrivateInfo()">View My Private Info</button>
+
+    <h2>Private Info</h2>
+    <p id="privateInfo"></p>
+
+    <script>
+        const web3 = new Web3(window.ethereum);
+        const privateLayerAddress = '0xe7f1725e7734ce288f8367e1bb143e90bb3f0512';
+        const privateLayerAbi = [/* Your PrivateLayer ABI here */];
+        const privateLayer = new web3.eth.Contract(privateLayerAbi, privateLayerAddress);
+
+        async function viewPrivateInfo() {
+            const accounts = await web3.eth.getAccounts();
+            const userAddress = accounts[0];
+
+            // Fetch private info
+            const privateInfo = await privateLayer.methods.getPrivateInfo(userAddress).call();
+
+            const privateInfoText = `IC Number: ${privateInfo.IcNumber}, Bank Account: ${privateInfo.BankAcc}`;
+            document.getElementById("privateInfo").innerText = privateInfoText;
+        }
+    </script>
+</body>
+</html>
