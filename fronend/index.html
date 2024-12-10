@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public & Private Layer DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Public & Private Layer DApp</h1>
+
+    <!-- Public Layer Section -->
+    <section>
+        <h2>Register Public Info</h2>
+        <form id="public-info-form">
+            <label for="public-name">Name:</label>
+            <input type="text" id="public-name" required><br>
+
+            <label for="public-bdate">Birth Date (Timestamp):</label>
+            <input type="number" id="public-bdate" required><br>
+
+            <label for="public-ic">IC Number:</label>
+            <input type="text" id="public-ic" required><br>
+
+            <button type="submit">Register Public Info</button>
+        </form>
+        <p id="public-status"></p>
+    </section>
+
+    <!-- Private Layer Section -->
+    <section>
+        <h2>Register Private Info</h2>
+        <form id="private-info-form">
+            <label for="private-ic">IC Number:</label>
+            <input type="text" id="private-ic" required><br>
+
+            <label for="private-bank">Bank Account:</label>
+            <input type="text" id="private-bank" required><br>
+
+            <button type="submit">Register Private Info</button>
+        </form>
+        <p id="private-status"></p>
+    </section>
+
+    <!-- Verify Hash -->
+    <section>
+        <h2>Verify IC Hash</h2>
+        <form id="verify-form">
+            <label for="verify-address">Address:</label>
+            <input type="text" id="verify-address" required><br>
+
+            <label for="verify-ic">IC Number:</label>
+            <input type="text" id="verify-ic" required><br>
+
+            <button type="submit">Verify</button>
+        </form>
+        <p id="verify-result"></p>
+    </section>
+
+    <script>
+        // Replace with your deployed contract addresses
+        const publicLayerAddress = "0xYourPublicLayerContractAddress";
+        const privateLayerAddress = "0xYourPrivateLayerContractAddress";
+
+        // Replace with your contract ABIs
+        const publicLayerABI = []; // Add PublicLayer ABI
+        const privateLayerABI = []; // Add PrivateLayer ABI
+
+        let web3;
+        let publicLayer;
+        let privateLayer;
+
+        window.addEventListener("load", async () => {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.enable();
+
+                publicLayer = new web3.eth.Contract(publicLayerABI, publicLayerAddress);
+                privateLayer = new web3.eth.Contract(privateLayerABI, privateLayerAddress);
+            } else {
+                alert("Please install MetaMask to interact with this DApp.");
+            }
+        });
+
+        // Register Public Info
+        document.getElementById("public-info-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const name = document.getElementById("public-name").value;
+            const bdate = document.getElementById("public-bdate").value;
+            const ic = document.getElementById("public-ic").value;
+            const accounts = await web3.eth.getAccounts();
+
+            try {
+                await publicLayer.methods.registerPublicInfo(accounts[0], name, bdate, ic).send({ from: accounts[0] });
+                document.getElementById("public-status").textContent = "Public info registered successfully!";
+            } catch (error) {
+                document.getElementById("public-status").textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Register Private Info
+        document.getElementById("private-info-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const ic = document.getElementById("private-ic").value;
+            const bank = document.getElementById("private-bank").value;
+            const accounts = await web3.eth.getAccounts();
+
+            try {
+                await privateLayer.methods.registerPrivateInfo(accounts[0], ic, bank).send({ from: accounts[0] });
+                document.getElementById("private-status").textContent = "Private info registered successfully!";
+            } catch (error) {
+                document.getElementById("private-status").textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Verify IC Hash
+        document.getElementById("verify-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const address = document.getElementById("verify-address").value;
+            const ic = document.getElementById("verify-ic").value;
+
+            try {
+                const result = await publicLayer.methods.verifyHash(address, ic).call();
+                document.getElementById("verify-result").textContent = result ? "Hash verified!" : "Hash verification failed.";
+            } catch (error) {
+                document.getElementById("verify-result").textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
