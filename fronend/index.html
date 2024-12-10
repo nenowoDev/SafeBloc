@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Public & Private Layer DApp</title>
     <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
 </head>
+
 <body>
     <h1>Public & Private Layer DApp</h1>
 
@@ -58,27 +60,223 @@
     </section>
 
     <script>
-        // Replace with your deployed contract addresses
-        const publicLayerAddress = "0xYourPublicLayerContractAddress";
-        const privateLayerAddress = "0xYourPrivateLayerContractAddress";
+        // Update with your deployed contract addresses on the Hardhat node
+        const publicLayerAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3"; // Replace with the actual address
+        const privateLayerAddress = "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512"; // Replace with the actual address
 
         // Replace with your contract ABIs
-        const publicLayerABI = []; // Add PublicLayer ABI
-        const privateLayerABI = []; // Add PrivateLayer ABI
+        const publicLayerABI = [
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "useraddress",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "BDate",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "bytes32",
+                        "name": "icHash",
+                        "type": "bytes32"
+                    }
+                ],
+                "name": "PublicInfoRegistered",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "",
+                        "type": "address"
+                    }
+                ],
+                "name": "publicInfoRegistry",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "BDate",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "IcHash",
+                        "type": "bytes32"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "useraddress",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "BDate",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "IcNumber",
+                        "type": "string"
+                    }
+                ],
+                "name": "registerPublicInfo",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "useraddress",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "IcNumber",
+                        "type": "string"
+                    }
+                ],
+                "name": "verifyHash",
+                "outputs": [
+                    {
+                        "internalType": "bool",
+                        "name": "",
+                        "type": "bool"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+        const privateLayerABI = [
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": false,
+                        "internalType": "address",
+                        "name": "useraddress",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "IcNumber",
+                        "type": "string"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "BankAcc",
+                        "type": "string"
+                    }
+                ],
+                "name": "PrivateInfoRegistered",
+                "type": "event"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "useraddress",
+                        "type": "address"
+                    }
+                ],
+                "name": "getPrivateInfo",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "IcNumber",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "BankAcc",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "address",
+                        "name": "useraddress",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "IcNumber",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "BankAcc",
+                        "type": "string"
+                    }
+                ],
+                "name": "registerPrivateInfo",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ];
 
         let web3;
         let publicLayer;
         let privateLayer;
 
         window.addEventListener("load", async () => {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                await window.ethereum.enable();
+            try {
+                // Connect to the local Hardhat node (assuming it runs on http://localhost:8545)
+                if (window.ethereum) {
+                    // Use web3 provider for Hardhat
+                    web3 = new Web3("http://localhost:8545"); // Connect to the Hardhat node
 
-                publicLayer = new web3.eth.Contract(publicLayerABI, publicLayerAddress);
-                privateLayer = new web3.eth.Contract(privateLayerABI, privateLayerAddress);
-            } else {
-                alert("Please install MetaMask to interact with this DApp.");
+                    // Request account access (if needed)
+                    await window.ethereum.request({ method: "eth_requestAccounts" });
+
+                    // Initialize contracts with ABI and address
+                    publicLayer = new web3.eth.Contract(publicLayerABI, publicLayerAddress);
+                    privateLayer = new web3.eth.Contract(privateLayerABI, privateLayerAddress);
+                } else {
+                    alert("Please install MetaMask to interact with this DApp.");
+                }
+            } catch (error) {
+                console.error("Error in loading Web3 or MetaMask:", error);
+                alert("An error occurred while connecting to MetaMask: " + error.message);
             }
         });
 
@@ -128,4 +326,5 @@
         });
     </script>
 </body>
+
 </html>
